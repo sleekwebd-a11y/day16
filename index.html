@@ -1,131 +1,127 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>NationForge • Build Your Perfect Nation</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-</head>
-<body class="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950 text-slate-200 font-sans">
-  <div class="max-w-2xl mx-auto px-4 py-10 space-y-6">
+var selectedEC = 'L';
 
-    <!-- Header -->
-    <div class="text-center space-y-2">
-      <div class="w-16 h-16 mx-auto bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl shadow-2xl flex items-center justify-center text-3xl">🏛️</div>
-      <h1 class="text-4xl font-black bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">NationForge</h1>
-      <p class="text-slate-400 text-sm">Design your nation's policies. Watch 50 years unfold in real time.</p>
-    </div>
+window.addEventListener('DOMContentLoaded', function () {
 
-    <!-- Setup panel -->
-    <div id="setupPanel" class="space-y-4">
+  // ── Error correction picker ──
+  document.querySelectorAll('.ec-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      selectedEC = btn.dataset.ec;
+      document.querySelectorAll('.ec-btn').forEach(function (b) {
+        var active = b.dataset.ec === selectedEC;
+        b.className = 'ec-btn py-2 rounded-xl text-xs font-bold border transition-all ' +
+          (active ? 'bg-violet-600 border-violet-500 text-white' : 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10');
+      });
+    });
+  });
 
-      <!-- Nation name -->
-      <div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 shadow-2xl">
-        <h2 class="text-lg font-bold mb-4">🗺️ Your Nation</h2>
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-xs text-slate-400 mb-1">Nation name</label>
-            <input id="nationName" type="text" placeholder="Saaremaa" maxlength="30"
-              class="w-full p-3 bg-white/5 border border-white/20 rounded-2xl text-white placeholder-slate-500 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
-          </div>
-          <div>
-            <label class="block text-xs text-slate-400 mb-1">Starting population</label>
-            <select id="startPop" class="w-full p-3 bg-slate-800 border border-white/20 rounded-2xl text-white focus:outline-none">
-              <option value="50000">Small (50k)</option>
-              <option value="500000" selected>Medium (500k)</option>
-              <option value="5000000">Large (5M)</option>
-            </select>
-          </div>
-        </div>
-      </div>
+  // ── Size slider ──
+  document.getElementById('qrSize').addEventListener('input', function () {
+    document.getElementById('sizeLabel').textContent = this.value + ' × ' + this.value;
+  });
 
-      <!-- Policies -->
-      <div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 shadow-2xl space-y-5">
-        <h2 class="text-lg font-bold">⚖️ Set Your Policies</h2>
-        <p class="text-xs text-slate-400">Every slider affects multiple outcomes. There are real trade-offs.</p>
+  // ── Color pickers ──
+  document.getElementById('fgColor').addEventListener('input', function () {
+    document.getElementById('fgHex').textContent = this.value;
+  });
+  document.getElementById('bgColor').addEventListener('input', function () {
+    document.getElementById('bgHex').textContent = this.value;
+  });
 
-        <div id="sliders" class="space-y-5"></div>
-      </div>
+  // ── Generate ──
+  document.getElementById('generateBtn').addEventListener('click', generateQR);
 
-      <!-- Quick presets -->
-      <div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 shadow-2xl">
-        <h2 class="text-sm font-bold text-slate-300 mb-3">⚡ Quick presets</h2>
-        <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
-          <button onclick="applyPreset('nordic')"     class="py-3 px-2 bg-blue-600/30 hover:bg-blue-600/50 border border-blue-500/30 rounded-2xl text-xs font-semibold transition-all">🇸🇪 Nordic</button>
-          <button onclick="applyPreset('singapore')"  class="py-3 px-2 bg-red-600/30 hover:bg-red-600/50 border border-red-500/30 rounded-2xl text-xs font-semibold transition-all">🇸🇬 Singapore</button>
-          <button onclick="applyPreset('libertarian')" class="py-3 px-2 bg-yellow-600/30 hover:bg-yellow-600/50 border border-yellow-500/30 rounded-2xl text-xs font-semibold transition-all">🗽 Libertarian</button>
-          <button onclick="applyPreset('estonia')"    class="py-3 px-2 bg-emerald-600/30 hover:bg-emerald-600/50 border border-emerald-500/30 rounded-2xl text-xs font-semibold transition-all">🇪🇪 e-Estonia</button>
-        </div>
-      </div>
+  // ── Enter key in textarea ──
+  document.getElementById('qrInput').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      generateQR();
+    }
+  });
 
-      <button onclick="startSimulation()" class="w-full py-5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 rounded-2xl font-black text-xl shadow-2xl transition-all">
-        🚀 Found Nation & Simulate
-      </button>
-    </div>
+  // ── Download PNG ──
+  document.getElementById('downloadPng').addEventListener('click', function () {
+    var canvas = document.getElementById('qrCanvas');
+    var link   = document.createElement('a');
+    var text   = document.getElementById('qrInput').value.trim();
+    var slug   = text.replace(/[^a-z0-9]/gi, '-').toLowerCase().slice(0, 40) || 'qr-code';
+    link.download = slug + '.png';
+    link.href     = canvas.toDataURL('image/png');
+    link.click();
+  });
 
-    <!-- Simulation panel -->
-    <div id="simPanel" class="hidden space-y-4">
+  // ── Copy image ──
+  document.getElementById('copyBtn').addEventListener('click', function () {
+    var canvas = document.getElementById('qrCanvas');
+    canvas.toBlob(function (blob) {
+      var item = new ClipboardItem({ 'image/png': blob });
+      navigator.clipboard.write([item])
+        .then(function ()  { flashBtn('copyBtn', '✅ Copied!'); })
+        .catch(function () { flashBtn('copyBtn', '❌ Failed'); });
+    });
+  });
 
-      <!-- Nation header -->
-      <div class="bg-gradient-to-r from-emerald-900/50 to-teal-900/50 backdrop-blur-xl border border-emerald-500/30 rounded-3xl p-6 shadow-2xl">
-        <div class="flex justify-between items-start">
-          <div>
-            <h2 id="simNationName" class="text-2xl font-black"></h2>
-            <div id="simYear" class="text-emerald-300 font-mono text-lg mt-1">Year 1</div>
-          </div>
-          <div id="gradeDisplay" class="text-6xl font-black"></div>
-        </div>
+  // ── Reset ──
+  document.getElementById('resetBtn').addEventListener('click', function () {
+    document.getElementById('qrInput').value = '';
+    document.getElementById('outputCard').classList.add('hidden');
+    document.getElementById('qrInput').focus();
+  });
 
-        <!-- Key stats row -->
-        <div class="grid grid-cols-4 gap-3 mt-5">
-          <div class="bg-black/20 rounded-2xl p-3 text-center">
-            <div id="statGDP" class="text-xl font-black text-emerald-300">-</div>
-            <div class="text-xs text-slate-400 mt-1">GDP/capita</div>
-          </div>
-          <div class="bg-black/20 rounded-2xl p-3 text-center">
-            <div id="statPop" class="text-xl font-black text-blue-300">-</div>
-            <div class="text-xs text-slate-400 mt-1">Population</div>
-          </div>
-          <div class="bg-black/20 rounded-2xl p-3 text-center">
-            <div id="statHappy" class="text-xl font-black text-yellow-300">-</div>
-            <div class="text-xs text-slate-400 mt-1">Happiness</div>
-          </div>
-          <div class="bg-black/20 rounded-2xl p-3 text-center">
-            <div id="statDebt" class="text-xl font-black text-rose-300">-</div>
-            <div class="text-xs text-slate-400 mt-1">Debt/GDP %</div>
-          </div>
-        </div>
-      </div>
+});
 
-      <!-- Charts -->
-      <div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 shadow-2xl">
-        <h3 class="font-bold mb-4 text-sm text-slate-300 uppercase tracking-wider">📈 50-Year Trajectory</h3>
-        <div class="space-y-6">
-          <div><canvas id="chartGDP" height="120"></canvas></div>
-          <div><canvas id="chartHappy" height="120"></canvas></div>
-          <div><canvas id="chartPop" height="120"></canvas></div>
-        </div>
-      </div>
+// ── GENERATE ──────────────────────────────────
+function generateQR() {
+  var text = document.getElementById('qrInput').value.trim();
+  if (!text) {
+    shake(document.getElementById('qrInput'));
+    return;
+  }
 
-      <!-- Events log -->
-      <div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 shadow-2xl">
-        <h3 class="font-bold mb-4 text-sm text-slate-300 uppercase tracking-wider">📰 Nation Events</h3>
-        <div id="eventLog" class="space-y-2 max-h-64 overflow-y-auto"></div>
-      </div>
+  var size    = parseInt(document.getElementById('qrSize').value);
+  var fgColor = document.getElementById('fgColor').value;
+  var bgColor = document.getElementById('bgColor').value;
+  var canvas  = document.getElementById('qrCanvas');
 
-      <!-- Final result (shown at end) -->
-      <div id="finalCard" class="hidden bg-gradient-to-br from-emerald-900/40 to-teal-900/40 backdrop-blur-xl border border-emerald-500/30 rounded-3xl p-6 shadow-2xl space-y-4">
-        <h3 class="text-2xl font-black text-center">🏆 Simulation Complete</h3>
-        <div id="finalStats" class="space-y-2"></div>
-        <div class="grid grid-cols-2 gap-3">
-          <button onclick="shareNation()" class="py-4 bg-gradient-to-r from-violet-600 to-purple-600 rounded-2xl font-bold transition-all">🔗 Share nation</button>
-          <button onclick="resetSim()" class="py-4 bg-white/10 hover:bg-white/20 border border-white/20 rounded-2xl font-bold transition-all">🔄 Try again</button>
-        </div>
-      </div>
+  QRCode.toCanvas(canvas, text, {
+    width:            size,
+    margin:           2,
+    errorCorrectionLevel: selectedEC,
+    color: {
+      dark:  fgColor,
+      light: bgColor,
+    }
+  }, function (err) {
+    if (err) {
+      alert('Could not generate QR code. Text may be too long for this error correction level — try switching to L.');
+      return;
+    }
 
-    </div>
-  </div>
-  <script src="app.js"></script>
-</body>
-</html>
+    // Style wrapper bg to match
+    document.getElementById('qrWrapper').style.backgroundColor = bgColor;
+
+    // Show preview
+    var preview = document.getElementById('inputPreview').parentElement.parentElement;
+    document.getElementById('inputPreview').textContent =
+      text.length > 80 ? text.slice(0, 80) + '…' : text;
+
+    document.getElementById('outputCard').classList.remove('hidden');
+    document.getElementById('outputCard').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  });
+}
+
+// ── HELPERS ───────────────────────────────────
+function shake(el) {
+  el.classList.add('ring-2', 'ring-red-500');
+  el.placeholder = 'Please enter some text or a URL first...';
+  setTimeout(function () {
+    el.classList.remove('ring-2', 'ring-red-500');
+    el.placeholder = 'https://yoursite.com or any text...';
+  }, 1500);
+}
+
+function flashBtn(id, label) {
+  var btn  = document.getElementById(id);
+  var orig = btn.textContent;
+  btn.textContent = label;
+  setTimeout(function () { btn.textContent = orig; }, 2000);
+}
