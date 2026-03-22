@@ -1,362 +1,209 @@
-// ---- POLICY DEFINITIONS ----
-const POLICIES = [
-  { id: 'tax',         label: '💰 Income Tax Rate',        min: 0,  max: 60,  default: 25, unit: '%',  desc: 'Higher tax funds services but may slow growth' },
-  { id: 'healthcare',  label: '🏥 Healthcare (Public)',     min: 0,  max: 100, default: 60, unit: '%',  desc: '0 = fully private, 100 = fully public' },
-  { id: 'education',   label: '🎓 Education Investment',    min: 0,  max: 100, default: 60, unit: '%',  desc: 'Higher = better outcomes, longer payoff' },
-  { id: 'immigration', label: '🌍 Immigration Openness',    min: 0,  max: 100, default: 50, unit: '%',  desc: 'More open = faster growth, higher diversity' },
-  { id: 'bureaucracy', label: '📋 e-Governance Level',      min: 0,  max: 100, default: 50, unit: '%',  desc: 'Higher = less red tape, more efficiency' },
-  { id: 'environment', label: '🌿 Environmental Laws',      min: 0,  max: 100, default: 50, unit: '%',  desc: 'Strict = healthier, slower industrial growth' },
-  { id: 'housing',     label: '🏠 Housing Freedom',         min: 0,  max: 100, default: 50, unit: '%',  desc: '0 = rent control, 100 = free market' },
-  { id: 'military',    label: '⚔️ Military Spending',       min: 0,  max: 10,  default: 2,  unit: '%GDP', desc: 'High = secure but expensive' },
-];
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>QR Generator — Free & Instant</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-violet-950 text-slate-200 font-sans flex items-center justify-center px-4 py-10">
 
-const PRESETS = {
-  nordic:      { tax: 50, healthcare: 90, education: 85, immigration: 60, bureaucracy: 70, environment: 80, housing: 40, military: 2 },
-  singapore:   { tax: 20, healthcare: 50, education: 80, immigration: 80, bureaucracy: 90, environment: 60, housing: 30, military: 4 },
-  libertarian: { tax: 10, healthcare: 10, education: 20, immigration: 90, bureaucracy: 80, environment: 20, housing: 90, military: 1 },
-  estonia:     { tax: 20, healthcare: 65, education: 75, immigration: 55, bureaucracy: 95, environment: 65, housing: 60, military: 3 },
-};
+<div class="w-full max-w-md space-y-5">
 
-// ---- EVENTS POOL ----
-const EVENTS = [
-  { text: '🌐 Tech companies relocate due to low red tape', condition: p => p.bureaucracy > 70, gdp: 8,  happy: 3,  pop: 2  },
-  { text: '📉 Tax avoidance rises — wealthy move assets abroad', condition: p => p.tax > 50, gdp: -5, happy: -2, pop: -1 },
-  { text: '🎓 Education reforms pay off — productivity surge', condition: p => p.education > 70, gdp: 6, happy: 4, pop: 1 },
-  { text: '🏥 Healthcare system praised globally — life expectancy up', condition: p => p.healthcare > 75, gdp: 2, happy: 8, pop: 3 },
-  { text: '🌿 Green energy boom — exports rise', condition: p => p.environment > 70, gdp: 5, happy: 5, pop: 1 },
-  { text: '🌍 Immigration wave brings skilled workers', condition: p => p.immigration > 70, gdp: 7, happy: 2, pop: 8 },
-  { text: '🏠 Housing crisis — affordability collapses', condition: p => p.housing > 80, gdp: -3, happy: -8, pop: -2 },
-  { text: '📋 Bureaucracy strangling small businesses', condition: p => p.bureaucracy < 30, gdp: -6, happy: -5, pop: -2 },
-  { text: '⚔️ Military strength deters threats — stability bonus', condition: p => p.military > 5, gdp: 3, happy: 3, pop: 1 },
-  { text: '💸 Low taxes attract foreign investment boom', condition: p => p.tax < 15, gdp: 10, happy: 4, pop: 3 },
-  { text: '🏥 Private healthcare crisis — inequality rises', condition: p => p.healthcare < 20, gdp: 0, happy: -9, pop: -3 },
-  { text: '🌍 Brain drain — educated youth emigrating', condition: p => p.education < 30 && p.tax > 40, gdp: -7, happy: -6, pop: -5 },
-  { text: '🌿 Pollution scandal damages reputation', condition: p => p.environment < 20, gdp: -4, happy: -7, pop: -2 },
-  { text: '📈 e-Government wins global award — FDI surge', condition: p => p.bureaucracy > 85, gdp: 9, happy: 6, pop: 2 },
-  { text: '🏘️ Rent control causes housing shortage', condition: p => p.housing < 20, gdp: -2, happy: -6, pop: -3 },
-  { text: '🎉 Quality of life ranking #1 globally', condition: p => p.healthcare > 70 && p.education > 70 && p.environment > 60, gdp: 5, happy: 12, pop: 5 },
-  { text: '💰 Government debt crisis — austerity needed', condition: p => p.tax < 15 && p.healthcare > 70, gdp: -8, happy: -10, pop: -2 },
-  { text: '🌐 Startup ecosystem explodes — unicorns emerge', condition: p => p.bureaucracy > 75 && p.tax < 25, gdp: 12, happy: 7, pop: 4 },
-  { text: '📉 Recession hits — unemployment rises', condition: () => Math.random() < 0.15, gdp: -6, happy: -8, pop: -1 },
-  { text: '🌱 Environmental tourism boosts GDP', condition: p => p.environment > 65, gdp: 4, happy: 5, pop: 2 },
-];
+  <div class="text-center space-y-2">
+    <div class="text-5xl">⬛</div>
+    <h1 class="text-3xl font-black bg-gradient-to-r from-white to-violet-300 bg-clip-text text-transparent">QR Generator</h1>
+    <p class="text-slate-400 text-sm">Free. Instant. No login. No watermark.</p>
+  </div>
 
-// ---- STATE ----
-let policies  = {};
-let simState  = {};
-let simTicker = null;
-let charts    = {};
-let chartData = { years: [], gdp: [], happy: [], pop: [] };
+  <div class="bg-white/5 border border-white/10 rounded-3xl p-6 space-y-4">
 
-// ---- BUILD SLIDERS ----
-function buildSliders() {
-  const container = document.getElementById('sliders');
-  POLICIES.forEach(p => {
-    policies[p.id] = p.default;
-    container.innerHTML += `
+    <div>
+      <label class="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wider">URL or text</label>
+      <textarea id="qrInput" rows="3" placeholder="https://yoursite.com or any text..."
+        class="w-full p-4 bg-white/5 border border-white/20 rounded-2xl text-white placeholder-slate-500 focus:ring-2 focus:ring-violet-500 focus:outline-none resize-none text-sm leading-relaxed"></textarea>
+    </div>
+
+    <div class="grid grid-cols-2 gap-3">
       <div>
-        <div class="flex justify-between items-center mb-1">
-          <span class="text-sm font-semibold">${p.label}</span>
-          <span id="val_${p.id}" class="text-sm font-mono text-emerald-300 w-16 text-right">${p.default}${p.unit}</span>
+        <label class="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wider">Foreground</label>
+        <div class="flex items-center gap-2">
+          <input type="color" id="fgColor" value="#ffffff"
+            class="w-10 h-10 rounded-xl border border-white/20 bg-transparent cursor-pointer">
+          <span id="fgHex" class="text-xs font-mono text-slate-400">#ffffff</span>
         </div>
-        <input type="range" id="slider_${p.id}" min="${p.min}" max="${p.max}" value="${p.default}" step="1"
-          class="w-full h-2 rounded-full appearance-none cursor-pointer accent-emerald-500 bg-white/10"
-          oninput="updatePolicy('${p.id}', this.value, '${p.unit}')">
-        <div class="text-xs text-slate-500 mt-1">${p.desc}</div>
       </div>
-    `;
-  });
-}
+      <div>
+        <label class="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wider">Background</label>
+        <div class="flex items-center gap-2">
+          <input type="color" id="bgColor" value="#0f172a"
+            class="w-10 h-10 rounded-xl border border-white/20 bg-transparent cursor-pointer">
+          <span id="bgHex" class="text-xs font-mono text-slate-400">#0f172a</span>
+        </div>
+      </div>
+    </div>
 
-function updatePolicy(id, val, unit) {
-  policies[id] = parseFloat(val);
-  document.getElementById('val_' + id).textContent = val + unit;
-}
+    <div>
+      <div class="flex justify-between mb-2">
+        <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Size</label>
+        <span id="sizeLabel" class="text-xs font-mono text-violet-300">256 × 256</span>
+      </div>
+      <input type="range" id="qrSize" min="128" max="512" step="32" value="256"
+        class="w-full h-2 rounded-full appearance-none cursor-pointer accent-violet-500 bg-white/10">
+    </div>
 
-function applyPreset(name) {
-  const preset = PRESETS[name];
-  Object.entries(preset).forEach(([id, val]) => {
-    policies[id] = val;
-    const slider = document.getElementById('slider_' + id);
-    const policy = POLICIES.find(p => p.id === id);
-    if (slider) slider.value = val;
-    if (policy) document.getElementById('val_' + id).textContent = val + policy.unit;
-  });
-}
+    <div>
+      <label class="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wider">Error correction</label>
+      <div class="grid grid-cols-4 gap-2">
+        <button class="ec-btn py-2 rounded-xl text-xs font-bold border transition-all bg-violet-600 border-violet-500 text-white" data-ec="L">L · Low</button>
+        <button class="ec-btn py-2 rounded-xl text-xs font-bold border transition-all bg-white/5 border-white/10 text-slate-300" data-ec="M">M · Med</button>
+        <button class="ec-btn py-2 rounded-xl text-xs font-bold border transition-all bg-white/5 border-white/10 text-slate-300" data-ec="Q">Q · High</button>
+        <button class="ec-btn py-2 rounded-xl text-xs font-bold border transition-all bg-white/5 border-white/10 text-slate-300" data-ec="H">H · Max</button>
+      </div>
+    </div>
 
-// ---- SIMULATION ENGINE ----
-function startSimulation() {
-  const name    = document.getElementById('nationName').value.trim() || 'Saaremaa';
-  const startPop = parseInt(document.getElementById('startPop').value);
+    <button id="generateBtn"
+      class="w-full py-4 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 rounded-2xl font-black text-lg shadow-xl transition-all active:scale-95">
+      ⬛ Generate QR Code
+    </button>
+  </div>
 
-  simState = {
-    name,
-    year:     1,
-    gdp:      12000,
-    pop:      startPop,
-    happy:    50,
-    debt:     30,
-    maxYears: 50,
-  };
-
-  chartData = { years: [], gdp: [], happy: [], pop: [] };
-
-  document.getElementById('setupPanel').classList.add('hidden');
-  document.getElementById('simPanel').classList.remove('hidden');
-  document.getElementById('simNationName').textContent = '🏛️ ' + name;
-  document.getElementById('finalCard').classList.add('hidden');
-  document.getElementById('eventLog').innerHTML = '';
-
-  initCharts();
-  updateDisplay();
-
-  simTicker = setInterval(simulateYear, 800);
-}
-
-function simulateYear() {
-  if (simState.year > simState.maxYears) {
-    clearInterval(simTicker);
-    showFinalResult();
-    return;
-  }
-
-  const p = policies;
-
-  // GDP growth formula
-  let gdpGrowth = 1.5; // base %
-  gdpGrowth += (p.bureaucracy - 50) * 0.05;
-  gdpGrowth += (50 - p.tax) * 0.04;
-  gdpGrowth += (p.education - 50) * 0.03;
-  gdpGrowth += (p.immigration - 50) * 0.02;
-  gdpGrowth -= p.military * 0.1;
-  gdpGrowth = Math.max(-5, Math.min(12, gdpGrowth));
-  simState.gdp = Math.round(simState.gdp * (1 + gdpGrowth / 100));
-
-  // Population growth
-  let popGrowth = 0.3;
-  popGrowth += (p.immigration - 50) * 0.04;
-  popGrowth += (p.healthcare - 50) * 0.02;
-  popGrowth -= Math.max(0, p.tax - 40) * 0.01;
-  popGrowth = Math.max(-2, Math.min(5, popGrowth));
-  simState.pop = Math.round(simState.pop * (1 + popGrowth / 100));
-
-  // Happiness
-  let happyDelta = 0;
-  happyDelta += (p.healthcare - 50) * 0.08;
-  happyDelta += (p.education  - 50) * 0.06;
-  happyDelta += (p.environment- 50) * 0.04;
-  happyDelta -= Math.abs(p.housing - 50) * 0.02;
-  happyDelta -= p.military * 0.05;
-  happyDelta -= Math.max(0, p.tax - 45) * 0.03;
-  simState.happy = Math.max(0, Math.min(100, simState.happy + happyDelta));
-
-  // Debt
-  const spending = p.healthcare * 0.1 + p.education * 0.08 + p.military * 2;
-  const revenue  = p.tax * 0.9;
-  simState.debt  = Math.max(0, Math.min(200, simState.debt + (spending - revenue) * 0.05));
-
-  // Random events (fire every ~5 years, condition-based)
-  if (simState.year % 5 === 0 || Math.random() < 0.08) {
-    fireEvent();
-  }
-
-  // Update chart data
-  chartData.years.push(simState.year);
-  chartData.gdp.push(simState.gdp);
-  chartData.happy.push(Math.round(simState.happy));
-  chartData.pop.push(Math.round(simState.pop / 1000));
-
-  updateCharts();
-  updateDisplay();
-
-  simState.year++;
-}
-
-function fireEvent() {
-  const eligible = EVENTS.filter(e => e.condition(policies));
-  if (!eligible.length) return;
-
-  const ev = eligible[Math.floor(Math.random() * eligible.length)];
-
-  simState.gdp   = Math.max(1000, Math.round(simState.gdp   * (1 + ev.gdp   / 100)));
-  simState.happy = Math.max(0, Math.min(100, simState.happy + ev.happy));
-  simState.pop   = Math.max(1000, Math.round(simState.pop   * (1 + ev.pop   / 100)));
-
-  const log    = document.getElementById('eventLog');
-  const color  = ev.gdp > 0 ? 'border-emerald-500/30 bg-emerald-900/20' : 'border-rose-500/30 bg-rose-900/20';
-  const entry  = document.createElement('div');
-  entry.className = `p-3 rounded-xl border ${color} text-sm`;
-  entry.innerHTML = `<span class="font-mono text-slate-400 text-xs">Year ${simState.year} — </span>${ev.text}`;
-  log.insertBefore(entry, log.firstChild);
-}
-
-// ---- DISPLAY ----
-function formatNum(n) {
-  if (n >= 1000000) return (n/1000000).toFixed(1) + 'M';
-  if (n >= 1000)    return (n/1000).toFixed(0) + 'k';
-  return n;
-}
-
-function getGrade() {
-  const score = simState.gdp / 1000 * 0.3
-    + simState.happy * 0.4
-    + (100 - simState.debt) * 0.2
-    + Math.min(100, simState.pop / 10000) * 0.1;
-
-  if (score > 90) return { grade: 'S', color: 'text-emerald-300' };
-  if (score > 75) return { grade: 'A', color: 'text-lime-300'    };
-  if (score > 55) return { grade: 'B', color: 'text-yellow-300'  };
-  if (score > 35) return { grade: 'C', color: 'text-orange-300'  };
-  return                  { grade: 'F', color: 'text-red-400'     };
-}
-
-function updateDisplay() {
-  document.getElementById('simYear').textContent   = `Year ${simState.year} of ${simState.maxYears}`;
-  document.getElementById('statGDP').textContent   = '€' + formatNum(simState.gdp);
-  document.getElementById('statPop').textContent   = formatNum(simState.pop);
-  document.getElementById('statHappy').textContent = Math.round(simState.happy) + '/100';
-  document.getElementById('statDebt').textContent  = Math.round(simState.debt)  + '%';
-
-  const g = getGrade();
-  const gradeEl = document.getElementById('gradeDisplay');
-  gradeEl.textContent  = g.grade;
-  gradeEl.className    = 'text-6xl font-black ' + g.color;
-}
-
-// ---- CHARTS ----
-function initCharts() {
-  const defaults = {
-    type: 'line',
-    options: {
-      responsive: true,
-      animation: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { ticks: { color: '#64748b', font: { size: 10 } }, grid: { color: '#ffffff08' } },
-        y: { ticks: { color: '#64748b', font: { size: 10 } }, grid: { color: '#ffffff08' } }
-      }
-    }
-  };
-
-  ['GDP','Happy','Pop'].forEach(name => {
-    const ctx = document.getElementById('chart' + name);
-    if (charts[name]) charts[name].destroy();
-    charts[name] = new Chart(ctx, {
-      ...defaults,
-      data: {
-        labels: [],
-        datasets: [{
-          data: [],
-          borderColor: name === 'GDP' ? '#34d399' : name === 'Happy' ? '#fbbf24' : '#60a5fa',
-          borderWidth: 2,
-          fill: true,
-          backgroundColor: name === 'GDP' ? '#34d39915' : name === 'Happy' ? '#fbbf2415' : '#60a5fa15',
-          tension: 0.4,
-          pointRadius: 0,
-        }]
-      },
-      options: {
-        ...defaults.options,
-        plugins: {
-          ...defaults.options.plugins,
-          title: {
-            display: true,
-            text: name === 'GDP' ? '💰 GDP per capita (€)' : name === 'Happy' ? '😊 Happiness (0-100)' : '👥 Population (thousands)',
-            color: '#94a3b8',
-            font: { size: 11 }
-          }
-        }
-      }
-    });
-  });
-}
-
-function updateCharts() {
-  charts.GDP.data.labels            = chartData.years;
-  charts.GDP.data.datasets[0].data  = chartData.gdp;
-  charts.Happy.data.labels          = chartData.years;
-  charts.Happy.data.datasets[0].data = chartData.happy;
-  charts.Pop.data.labels            = chartData.years;
-  charts.Pop.data.datasets[0].data  = chartData.pop;
-
-  charts.GDP.update('none');
-  charts.Happy.update('none');
-  charts.Pop.update('none');
-}
-
-// ---- FINAL RESULT ----
-function showFinalResult() {
-  const g = getGrade();
-  document.getElementById('finalCard').classList.remove('hidden');
-  document.getElementById('finalCard').scrollIntoView({ behavior: 'smooth' });
-
-  const comparisons = {
-    S: 'Better than Singapore 🇸🇬 — a true utopia.',
-    A: 'Comparable to Nordic countries 🇸🇪 — exceptional governance.',
-    B: 'Similar to Germany 🇩🇪 — solid but room to improve.',
-    C: 'Around the EU average 🇪🇺 — needs reforms.',
-    F: 'Struggling — major policy overhaul needed 🔴',
-  };
-
-  document.getElementById('finalStats').innerHTML = `
-    <div class="text-center py-4">
-      <span class="text-7xl font-black ${g.color}">${g.grade}</span>
-      <div class="text-slate-300 mt-2 font-semibold">${comparisons[g.grade]}</div>
+  <div id="outputCard" class="hidden bg-white/5 border border-white/10 rounded-3xl p-6 space-y-5">
+    <div class="flex justify-center">
+      <div id="qrWrapper" class="rounded-2xl overflow-hidden shadow-2xl p-4 inline-block">
+        <canvas id="qrCanvas"></canvas>
+      </div>
+    </div>
+    <div class="bg-black/20 rounded-2xl p-3 text-center">
+      <div class="text-xs text-slate-500 mb-1">Encoded content</div>
+      <div id="inputPreview" class="text-sm text-slate-200 font-mono break-all"></div>
     </div>
     <div class="grid grid-cols-2 gap-3">
-      <div class="bg-white/5 rounded-2xl p-4 text-center">
-        <div class="text-2xl font-black text-emerald-300">€${formatNum(simState.gdp)}</div>
-        <div class="text-xs text-slate-400 mt-1">Final GDP/capita</div>
-      </div>
-      <div class="bg-white/5 rounded-2xl p-4 text-center">
-        <div class="text-2xl font-black text-yellow-300">${Math.round(simState.happy)}/100</div>
-        <div class="text-xs text-slate-400 mt-1">Final happiness</div>
-      </div>
-      <div class="bg-white/5 rounded-2xl p-4 text-center">
-        <div class="text-2xl font-black text-blue-300">${formatNum(simState.pop)}</div>
-        <div class="text-xs text-slate-400 mt-1">Final population</div>
-      </div>
-      <div class="bg-white/5 rounded-2xl p-4 text-center">
-        <div class="text-2xl font-black text-rose-300">${Math.round(simState.debt)}%</div>
-        <div class="text-xs text-slate-400 mt-1">Debt/GDP</div>
-      </div>
+      <button id="downloadPng"
+        class="py-3 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 rounded-2xl font-bold text-sm transition-all active:scale-95">
+        ⬇ Download PNG
+      </button>
+      <button id="copyBtn"
+        class="py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-2xl font-bold text-sm transition-all active:scale-95">
+        📋 Copy Image
+      </button>
     </div>
-  `;
-}
+    <button id="resetBtn"
+      class="w-full py-3 bg-transparent hover:bg-white/5 border border-white/10 rounded-2xl font-semibold text-sm text-slate-400 hover:text-white transition-all">
+      ✕ Clear & start over
+    </button>
+  </div>
 
-// ---- SHARE ----
-function shareNation() {
-  const payload = { name: simState.name, policies };
-  const b64  = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
-  const url  = location.origin + location.pathname + '#n=' + encodeURIComponent(b64);
-  navigator.clipboard.writeText(url)
-    .then(() => alert('✅ Nation config copied! Share it and see how others do with your policies.'))
-    .catch(() => prompt('Copy this:', url));
-}
+  <p class="text-center text-xs text-slate-600">No data is stored. Everything runs in your browser.</p>
 
-function resetSim() {
-  clearInterval(simTicker);
-  document.getElementById('simPanel').classList.add('hidden');
-  document.getElementById('setupPanel').classList.remove('hidden');
-}
+</div>
 
-// ---- LOAD FROM HASH ----
-const match = location.hash.match(/#n=([^&]+)/);
-if (match) {
-  try {
-    const d = JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(match[1])))));
-    if (d.name) document.getElementById('nationName').value = d.name;
-    if (d.policies) {
-      Object.assign(policies, d.policies);
-      Object.entries(d.policies).forEach(([id, val]) => {
-        const slider = document.getElementById('slider_' + id);
-        const policy = POLICIES.find(p => p.id === id);
-        if (slider) slider.value = val;
-        if (policy) document.getElementById('val_' + id).textContent = val + policy.unit;
+<script>
+var selectedEC = 'L';
+
+window.addEventListener('DOMContentLoaded', function () {
+
+  document.querySelectorAll('.ec-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      selectedEC = btn.dataset.ec;
+      document.querySelectorAll('.ec-btn').forEach(function (b) {
+        var active = b.dataset.ec === selectedEC;
+        b.className = 'ec-btn py-2 rounded-xl text-xs font-bold border transition-all ' +
+          (active ? 'bg-violet-600 border-violet-500 text-white' : 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10');
       });
+    });
+  });
+
+  document.getElementById('qrSize').addEventListener('input', function () {
+    document.getElementById('sizeLabel').textContent = this.value + ' × ' + this.value;
+  });
+
+  document.getElementById('fgColor').addEventListener('input', function () {
+    document.getElementById('fgHex').textContent = this.value;
+  });
+
+  document.getElementById('bgColor').addEventListener('input', function () {
+    document.getElementById('bgHex').textContent = this.value;
+  });
+
+  document.getElementById('generateBtn').addEventListener('click', generateQR);
+
+  document.getElementById('qrInput').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      generateQR();
     }
-  } catch {}
+  });
+
+  document.getElementById('downloadPng').addEventListener('click', function () {
+    var canvas = document.getElementById('qrCanvas');
+    var link   = document.createElement('a');
+    var text   = document.getElementById('qrInput').value.trim();
+    var slug   = text.replace(/[^a-z0-9]/gi, '-').toLowerCase().slice(0, 40) || 'qr-code';
+    link.download = slug + '.png';
+    link.href     = canvas.toDataURL('image/png');
+    link.click();
+  });
+
+  document.getElementById('copyBtn').addEventListener('click', function () {
+    var canvas = document.getElementById('qrCanvas');
+    canvas.toBlob(function (blob) {
+      var item = new ClipboardItem({ 'image/png': blob });
+      navigator.clipboard.write([item])
+        .then(function ()  { flashBtn('copyBtn', '✅ Copied!'); })
+        .catch(function () { flashBtn('copyBtn', '❌ Failed');  });
+    });
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', function () {
+    document.getElementById('qrInput').value = '';
+    document.getElementById('outputCard').classList.add('hidden');
+    document.getElementById('qrInput').focus();
+  });
+
+});
+
+function generateQR() {
+  var text = document.getElementById('qrInput').value.trim();
+  if (!text) { shake(document.getElementById('qrInput')); return; }
+
+  var size    = parseInt(document.getElementById('qrSize').value);
+  var fgColor = document.getElementById('fgColor').value;
+  var bgColor = document.getElementById('bgColor').value;
+  var canvas  = document.getElementById('qrCanvas');
+
+  QRCode.toCanvas(canvas, text, {
+    width: size, margin: 2,
+    errorCorrectionLevel: selectedEC,
+    color: { dark: fgColor, light: bgColor }
+  }, function (err) {
+    if (err) {
+      alert('Could not generate QR code. Try switching error correction to L.');
+      return;
+    }
+    document.getElementById('qrWrapper').style.backgroundColor = bgColor;
+    document.getElementById('inputPreview').textContent = text.length > 80 ? text.slice(0, 80) + '…' : text;
+    document.getElementById('outputCard').classList.remove('hidden');
+    document.getElementById('outputCard').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  });
 }
 
-// ---- INIT ----
-buildSliders();
+function shake(el) {
+  el.classList.add('ring-2', 'ring-red-500');
+  el.placeholder = 'Please enter some text or a URL first...';
+  setTimeout(function () {
+    el.classList.remove('ring-2', 'ring-red-500');
+    el.placeholder = 'https://yoursite.com or any text...';
+  }, 1500);
+}
+
+function flashBtn(id, label) {
+  var btn  = document.getElementById(id);
+  var orig = btn.textContent;
+  btn.textContent = label;
+  setTimeout(function () { btn.textContent = orig; }, 2000);
+}
+</script>
+</body>
+</html>
